@@ -1,0 +1,137 @@
+// ==UserScript==
+// @name         3F后台管理系统—便捷插件
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  try to take over the world!
+// @author       You
+// @match        https://m.sanfu.com/newmgr/*
+// @icon         https://www.google.com/s2/favicons?domain=sanfu.com
+// @grant        none
+// ==/UserScript==
+
+;(function () {
+  "use strict"
+})()
+
+//  常用变量
+var infos = document.getElementsByClassName("ordersty")
+var infosObj = {}
+// 使用定时器，来等待页面与相关组件加载完毕，在进行添加相对应的函数
+setTimeout(function () {
+  document.getElementsByClassName("el-input__inner")[1].value =
+    "2889264852503798337"
+  // 查询按钮
+  let query_btn = document.getElementsByClassName(
+    "el-button el-button--primary is-plain"
+  )[0]
+  query_btn.addEventListener("click", function () {
+    // Your code here...
+
+    for (let i = 0; i < infos.length; i++) {
+      // 获取订单号    已转字符串
+      let orderID = infos[0]
+        .getElementsByClassName("spaceBetween")
+        [i].firstElementChild.children[1].innerText.match(/[0-9]+/g)
+        .toString()
+      // 获取店铺名
+      let storeName = infos[0]
+        .getElementsByClassName("spaceBetween")
+        [i].firstElementChild.children[0].innerText.toString()
+      // _____单独商品相关详细信息____
+      // goods翻译商品  所有商品ALL
+      let goodsList = infos[i].getElementsByClassName("el-table__row")
+      // 循环参数   注：系统有重复数据，因此除以2
+      for (let j = 0; j < goodsList.length / 2; j++) {
+        let data_name = "data" + j
+        infosObj[data_name] = {
+          dingDanHao: orderID,
+          dianPuMing: storeName,
+          // 色号
+          seHao:
+            goodsList[j].children[2].firstElementChild.innerText.toString(),
+          // 门店
+          menDian:
+            goodsList[
+              j
+            ].children[12].firstElementChild.firstElementChild.firstElementChild.innerText.toString(),
+        }
+        // _______________________________
+
+        // console.log(goodsList[j].children[2])
+      }
+    }
+    console.log(infosObj)
+  })
+
+  positionFn()
+}, 500)
+
+document.getElementsByClassName("el-button el-button--primary is-plain")[0]
+
+var toHTML_btn = document.createElement("button")
+
+setInterval(() => {
+  // 添加按钮跳转页面
+  for (let i = 0; i < infos.length; i++) {
+    // 定义商品一列
+    let goodsList = infos[i].getElementsByClassName("el-table__row")
+    for (let j = 0; j < goodsList.length / 2; j++) {
+      // 判断节点类型 名字
+      if (goodsList[j].lastChild.nodeName != "BUTTON") {
+        toHTML_btn = document.createElement("button")
+        toHTML_btn.style.width = "100px"
+        toHTML_btn.style.height = "50px"
+        toHTML_btn.innerText = "登记"
+        toHTMLfn(j)
+        goodsList[j].appendChild(toHTML_btn)
+      }
+    }
+  }
+}, 1000)
+
+function toHTMLfn(j) {
+  // 跳转页面
+  toHTML_btn.addEventListener("click", function (e) {
+    let data_name = "data" + j
+    window.open(`
+          https://work.bytenew.com/appMobile.html#/shareWorkTable/add/1687020_1240_1016304_32520604689828?dingDanHao=${infosObj[data_name].dingDanHao}&dianPuMing=${infosObj[data_name].dianPuMing}&seHao=${infosObj[data_name].seHao}&menDian=${infosObj[data_name].menDian}
+          `)
+  })
+}
+
+function positionFn() {
+  let queryInput = document.getElementsByClassName(
+    "input-with-select el-input el-input-group el-input-group--prepend el-input--suffix"
+  )[0]
+  let queryBtn = document.getElementsByClassName(
+    "el-button el-button--primary is-plain"
+  )[0]
+
+  queryInput.style.cssText = `
+              position: fixed;
+                  left:330px;
+                  top:3px;
+                  width:500px;
+              `
+  queryBtn.style.cssText = `
+              position: fixed;
+                  left:850px;
+                  top:3px;
+              `
+}
+
+// let data_name = "data" + j
+// //   设置色号为可点击事件，可跳转到登记红包页面
+//     document
+//       .getElementsByClassName("ordersty")[i]
+//       .getElementsByClassName("el-table__row")[j]
+//       .lastElementChild.addEventListener("click", function (e) {
+//         alert("JS文件点击")
+//         top.location.href = `
+//           https://work.bytenew.com/appMobile.html#/shareWorkTable/add/1687020_1240_1016304_32520604689828?
+//           dingDanHao=${infosObj[data_name].dingDanHao}&
+//           dianPuMing=${infosObj[data_name].dianPuMing}&
+//           seHao=${infosObj[data_name].seHao}&
+//           menDian=${infosObj[data_name].menDian}
+//           `
+//         })
