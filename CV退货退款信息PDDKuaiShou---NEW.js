@@ -17,6 +17,7 @@
 // @grant        none
 // ==/UserScript==
 
+
 //  平台店铺数据
 class PlatformStoreData {
     constructor(platform = "拼多多") {
@@ -54,7 +55,7 @@ class PlatformStoreData {
     }
 
     // 店铺数据API
-    storeDataAPI (url, { method, data }) {
+    storeDataAPI (url, config = { method:'', data:'' }) {
         return fetch(url, {
             method: "get",
             headers: {
@@ -574,8 +575,32 @@ let message = new diyMessage();
         if (e.code == "KeyP" && e.altKey == true) {
             if (window.location.host == "fxg.jinritemai.com") {
                 let douYinStoreData = new PlatformStoreData("抖音");
-                douYinStoreData.then((res) => {
-                    console.log(res);
+                douYinStoreData.then((dataArr) => {
+                    // 填写数据
+                    let fillInData= [];
+
+                    let fwsjDetailTemp = ['订单配送时长','揽收及时率','仅退款自主完结时长','退货退款自主完结时长','IM三分钟平均回复率']
+                    let shop_analysisArr  = dataArr[1].data.shop_analysis;
+                    for (let fwsjDetailTemp_index = 0; fwsjDetailTemp_index < fwsjDetailTemp.length; fwsjDetailTemp_index++) {
+                        const titleText = fwsjDetailTemp[fwsjDetailTemp_index];
+                        for (let shop_analyisArr = 0; shop_analyisArr < shop_analysisArr.length; shop_analyisArr++) {
+                            const element = shop_analysisArr[shop_analyisArr];
+                            if(element.title == titleText){
+                                fillInData.push(element.value.value_figure);
+                            }
+                        }
+                    }
+
+
+                    let fwsjArrTemp = ['goods_score','logistics_score','service_score']
+                    for (let fwsjIndex = 0; fwsjIndex < fwsjArrTemp.length; fwsjIndex++) {
+                        const key = fwsjArrTemp[fwsjIndex];
+                        // console.log(dataArr[0].data[key])
+                        fillInData.push(dataArr[0].data[key].value);
+                    }
+
+                    console.log(fillInData.join('&'));
+                    alert(fillInData.join('&'))
                 });
             }
             console.log(e.code);
@@ -1374,8 +1399,9 @@ function addSalseTypeEventListenerFn (platform = '拼多多', type = '售后') {
     }
 }
 
-// 显示拼多多常用显示信息     如：备注
+// 显示平台常用显示信息     如：备注
 function showUseInfoFn (platform = '拼多多', type = '售后') {
+    // 大的方块 classX样式
     let classX = '';
     let orderNoClass = '';
     if (platform == '拼多多') {
@@ -1430,7 +1456,10 @@ function showUseInfoFn (platform = '拼多多', type = '售后') {
         let noteData = note.query({ orderNo: orderNo });
         // console.log(noteData);
         noteData.then((res) => {
-            rightDiv.innerText = `备注：${res.result.note}`;
+            // rightDiv.innerText = `备注：${res.result.note}`;
+            let rightDivSpan = document.createElement('span');
+            rightDivSpan.innerText = `备注：${res.result.note}`;
+            rightDiv.appendChild(rightDivSpan)
         });
         // }
         let sfOrderArr = $resolvingSForder.jsonChangeObject();
@@ -1511,6 +1540,16 @@ function showUseInfoFn (platform = '拼多多', type = '售后') {
                 }
             }
         }
+
+        // 复制售后信息
+        let cvShouHouInfoBtn = document.createElement('button');
+        cvShouHouInfoBtn.innerText = 'copyAfterSales'
+        cvShouHouInfoBtn.addEventListener('click',(e)=>{
+            console.log(e.path)
+            console.log(orderNo);
+       })
+
+        rightDiv.appendChild(cvShouHouInfoBtn)
         div.appendChild(leftDiv);
         div.appendChild(rightDiv);
         if (
