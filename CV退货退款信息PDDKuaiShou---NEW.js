@@ -332,6 +332,9 @@ class CommonModule extends Note {
                 let isChecke = false;
                 if (location.host == 'fxg.jinritemai.com') {
                     orderNo = orderModules[i].getElementsByClassName('style_id__iHitI')[0];
+                    if(needType == '售后单号'){
+                        orderNo = orderModules[i].getElementsByClassName('style_id__iHitI')[1];
+                    }
                     isChecke = undefined !== orderModules[i].getElementsByClassName('auxo-checkbox-wrapper-checked')[0]
 
                 } else if (location.host == 'mms.pinduoduo.com') {
@@ -342,8 +345,8 @@ class CommonModule extends Note {
                 if (
                     isChecke
                 ) {
-                    // 所需类型为订单号  则传入订单号
-                    if (needType == '订单号') {
+                    // 所需类型为订单号  则传入订单号/售后单号
+                    if (needType == '订单号' || needType == '售后单号') {
                         console.log(isChecke, orderNo.innerText);
                         orderNoArr.push(orderNo.innerText);
                     } else if (needType == '快递单号') {
@@ -356,7 +359,7 @@ class CommonModule extends Note {
                 // call修改this指向
                 let commonModule = new CommonModule(); // XXX  后期需修改
                 // 参数1 为返回值return，参数二才是那边获取到的数据
-                if (needType == '订单号') {
+                if (needType == '订单号' || needType == '售后单号') {
                     commonModule.DiyAlert.call(this, orderNoArr.join(","));
                 } else if (needType == '快递单号') {
                     commonModule.DiyAlert.call(this, orderNoArr.join("\n"));
@@ -661,6 +664,8 @@ let message = new diyMessage();
 function commonModuleDivFn () {
     let commonModuleDiv = document.createElement("div");
     commonModuleDiv.classList.add("commonModuleDiv");
+    commonModuleDiv.style.width = '300px'
+    commonModuleDiv.style.flexWrap = 'wrap'
     commonModuleDiv.style.padding = "10px 20px";
     commonModuleDiv.style.zIndex = 999;
     commonModuleDiv.style.position = "fixed";
@@ -669,12 +674,15 @@ function commonModuleDivFn () {
     commonModuleDiv.style.display = "none";
     let $common = new CommonModule();
 
-    // 获取拼多多售后订单号按钮
+    // 获取拼多多订单号按钮
     let getPddSalesOrderNoBtn = $common.getAfterSalesOrderBtn('订单号');
-    getPddSalesOrderNoBtn.innerText = "获取当前售后订单号";
+    getPddSalesOrderNoBtn.innerText = "获取checked订单号";
+    // 获取售后单号按钮
+    let getPlatformAfterNoBtn = $common.getAfterSalesOrderBtn('售后单号');
+    getPlatformAfterNoBtn.innerText = "获取checked订单号";
     // 获取当前选择的快递单号
     let getPddKuaiDiDanHaoBtn = $common.getAfterSalesOrderBtn('快递单号');
-    getPddKuaiDiDanHaoBtn.innerText = "获取当前快递单号";
+    getPddKuaiDiDanHaoBtn.innerText = "获取checked快递单号";
     // 修改备注按钮
     let updateNoteBtn = $common.updateNoteBtn();
     updateNoteBtn.innerText = "修改订单备注";
@@ -682,7 +690,7 @@ function commonModuleDivFn () {
     // 获取当前页面所有订单号
     let getAllOrderNoBtn = $common.getHTMLALLOderNoBtn();
     // 将需要的元素添加进Div 该数组
-    let needAppendDivArr = [getPddSalesOrderNoBtn, getPddKuaiDiDanHaoBtn, updateNoteBtn, setStoreageBtn, getAllOrderNoBtn];
+    let needAppendDivArr = [getPddSalesOrderNoBtn,getPlatformAfterNoBtn, getPddKuaiDiDanHaoBtn, updateNoteBtn, setStoreageBtn, getAllOrderNoBtn];
     for (let i = 0; i < needAppendDivArr.length; i++) {
         const element = needAppendDivArr[i];
         commonModuleDiv.appendChild(element);
@@ -931,7 +939,7 @@ function cvPddFn () {
     // 收录信息
     let info = [
         dingdanhao,
-        "",
+        shouHouNo,
         menDian,
         "",
         youXianTui,
