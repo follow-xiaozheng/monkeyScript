@@ -59,48 +59,75 @@ setTimeout(() => {
         if (orderNo != null || orderNo != '') {
             let orderNoArr = orderNo.split(',');
             let orderPromiseArr = []
-            for (let i = 0; i < orderNoArr.length; i++) {
-                const orderNum = orderNoArr[i];
-                // 使用数组去接受返回的promise
-                orderPromiseArr.push(sfapi.getOrderDetailAPI(orderNum))
+
+            let indexLength = orderNoArr.length
+            let index = 0
+            function multiRequest (orderNoArr) {
+                return sfapi.getOrderDetailAPI(orderNoArr[index]).then(res => {
+                    orderPromiseArr.push(res)
+                    // console.log(orderPromiseArr);
+                    if (index < indexLength - 1) {
+                        index++
+                    } else {
+                        // console.log(index, orderPromiseArr);
+                        promiseAllFn(orderPromiseArr)
+                        return orderPromiseArr
+                    }
+
+                    setTimeout(() => {
+                        multiRequest(orderNoArr)
+                    }, 200)
+                    // return res
+                })
+
+
             }
+            // 并发请求，200毫秒请求一个
+            multiRequest(orderNoArr)
+            // for (let i = 0; i < orderNoArr.length; i++) {
+            //     const orderNum = orderNoArr[i];
+            //     // 使用数组去接受返回的promise
+            //     orderPromiseArr.push(sfapi.getOrderDetailAPI(orderNum))
+            // }
 
             console.log(orderPromiseArr);
-
-            Promise.all(orderPromiseArr).then((res) => {
-                console.log(res);
-                // 订单信息数组 
-                let orderInfoArr = []
-                let orderWLXX = []
-                for (let i = 0; i < res.length; i++) {
-                    const resX = res[i];
-                    let netSales = resX.data.netSales
-                    let resData = resX.data;
-                    if (netSales == undefined || netSales == null) {
-                        netSales = resX.data.data.netSales
-                        resData = resX.data.data;
-                    }
-                    // 将每个promise值的data数据放入
-                    orderInfoArr.push(resData);
-                    for (let j = 0; j < netSales.length; j++) {
-                        const salse = netSales[j];
-                        // netSales.logisticsMsgDto
-                        for (let y = 0; y < salse.logisticsMsgDto.length; y++) {
-                            const wlxx = salse.logisticsMsgDto[y];
-                            let obj = {
-                                wuLiuDanHao: wlxx.lOGISTICNO,
-                                menDian: wlxx.sHO_ID,
-                                isDuiZong: wlxx.logisticDz
-                            };
-                            orderWLXX.push(obj)
+            function promiseAllFn (orderpromiseArr) {
+                return Promise.all(orderPromiseArr).then((res) => {
+                    console.log(res);
+                    // 订单信息数组 
+                    let orderInfoArr = []
+                    let orderWLXX = []
+                    for (let i = 0; i < res.length; i++) {
+                        const resX = res[i];
+                        let netSales = resX.data.netSales
+                        let resData = resX.data;
+                        if (netSales == undefined || netSales == null) {
+                            netSales = resX.data.data.netSales
+                            resData = resX.data.data;
+                        }
+                        // 将每个promise值的data数据放入
+                        orderInfoArr.push(resData);
+                        for (let j = 0; j < netSales.length; j++) {
+                            const salse = netSales[j];
+                            // netSales.logisticsMsgDto
+                            for (let y = 0; y < salse.logisticsMsgDto.length; y++) {
+                                const wlxx = salse.logisticsMsgDto[y];
+                                let obj = {
+                                    wuLiuDanHao: wlxx.lOGISTICNO,
+                                    menDian: wlxx.sHO_ID,
+                                    isDuiZong: wlxx.logisticDz
+                                };
+                                orderWLXX.push(obj)
+                            }
                         }
                     }
-                }
 
-                console.log(orderWLXX);
-                console.log(orderInfoArr);
-                DiyAlertFn(JSON.stringify(orderInfoArr))
-            })
+                    console.log(orderWLXX);
+                    console.log(orderInfoArr);
+                    DiyAlertFn(JSON.stringify(orderInfoArr))
+                })
+            }
+
         }
     })
 

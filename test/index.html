@@ -31,96 +31,127 @@
     <button style="top: 150px; position: relative" onclick="addElement()">
       测试3
     </button>
+    <button style="top: 150px; position: relative" onclick="xFn()">
+      测试4 并发请求
+    </button>
     <div class="testClass">XXXXX</div>
     <div class="x1">哇浪测试</div>
   </body>
   <script>
-   function createLogisticsDiv(obj){
-    // 创建ul 用于存储物流信息
-    let div = document.createElement('div');
-    div.classList.add('ulKuaiDiWuLiuClass')
-    div.style.display = 'flex';
-    div.style.visibility = 'hidden'
-    div.style.position = 'absolute'
-    div.style.left = `-${div.style.width+50}px`
-    
-    for (const key in obj) {
-      if (Object.hasOwnProperty.call(obj, key)) {
-        const element = obj[key];
-        let div_liX = document.createElement('div');
-        div_liX.style.padding = '10px'
-        // 内层里面执行对应添加
-         for (const keyX in element) {
-          if (Object.hasOwnProperty.call(element, keyX)) {
-            const elementX = element[keyX];
-              let span = document.createElement('span')
+    let promiseX = new Promise((resolve, reject) => {
+      resolve("成功")
+    })
+
+    let orderArr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+    let indexLength = orderArr.length
+    let index = 0
+    function xFn(orderArr) {
+      promiseX.then((res) => {
+        // 函数体
+        console.log(res, orderArr[index])
+      })
+
+      if (index < indexLength) {
+        index++
+      } else {
+        return 0
+      }
+
+      setTimeout(() => {
+        xFn(orderArr)
+      }, 200)
+    }
+
+    function createLogisticsDiv(obj) {
+      // 创建ul 用于存储物流信息
+      let div = document.createElement("div")
+      div.classList.add("ulKuaiDiWuLiuClass")
+      div.style.display = "flex"
+      div.style.visibility = "hidden"
+      div.style.position = "absolute"
+      div.style.left = `-${div.style.width + 50}px`
+
+      for (const key in obj) {
+        if (Object.hasOwnProperty.call(obj, key)) {
+          const element = obj[key]
+          let div_liX = document.createElement("div")
+          div_liX.style.padding = "10px"
+          // 内层里面执行对应添加
+          for (const keyX in element) {
+            if (Object.hasOwnProperty.call(element, keyX)) {
+              const elementX = element[keyX]
+              let span = document.createElement("span")
               // spanMsg.innerText = kdwlElement.msg
               span.innerText = elementX
               div_liX.appendChild(span)
+            }
           }
-         }
-         div.appendChild(div_liX)
+          div.appendChild(div_liX)
+        }
       }
+
+      return div
     }
 
-     return div
-  }
-
-  function addElement() {
-    let obj = [
-      {x1:'xxx',x2:'xx3'},
-      {x1:'xxx',x2:'xx3'}
-    ]
-    let div = createLogisticsDiv(obj);
-    document.getElementsByTagName('body')[0].appendChild(div)
-  }
+    function addElement() {
+      let obj = [
+        { x1: "xxx", x2: "xx3" },
+        { x1: "xxx", x2: "xx3" },
+      ]
+      let div = createLogisticsDiv(obj)
+      document.getElementsByTagName("body")[0].appendChild(div)
+    }
 
     window.onload = function () {
-      let div = document.createElement("div");
-      div.classList.add("divClass");
-      div.style.padding = "10px 20px";
-      div.style.zIndex = 999;
-      div.style.position = "fixed";
-      div.style.top = "10px";
-      div.style.left = "10px";
-      div.style.display = "none";
-      div.innerText = "XXXXXXXXXXXXXXXXXXXX\nXXXXXXXXXXXXXX";
-      document.getElementsByTagName("body")[0].appendChild(div);
-    };
+      let div = document.createElement("div")
+      div.classList.add("divClass")
+      div.style.padding = "10px 20px"
+      div.style.zIndex = 999
+      div.style.position = "fixed"
+      div.style.top = "10px"
+      div.style.left = "10px"
+      div.style.display = "none"
+      div.innerText = "XXXXXXXXXXXXXXXXXXXX\nXXXXXXXXXXXXXX"
+      document.getElementsByTagName("body")[0].appendChild(div)
+    }
 
     function testFn() {
-      let divX = document.getElementsByClassName("divClass")[0];
-      let display = divX.style.display;
-      console.log(display);
+      let divX = document.getElementsByClassName("divClass")[0]
+      let display = divX.style.display
+      console.log(display)
       if (display == "none") {
-        divX.style.display = "block";
+        divX.style.display = "block"
       } else {
-        divX.style.display = "none";
+        divX.style.display = "none"
       }
     }
 
     let promise = new Promise((resolve, reject) => {
-      resolve("成功");
-      reject("失败");
-    });
+      resolve("成功")
+      reject("失败")
+    })
 
     function test1Fn() {
-      let x1 = document.getElementsByClassName("x1")[0];
-      x1.style.width = "200px";
+      let x1 = document.getElementsByClassName("x1")[0]
+      x1.style.width = "200px"
       api1().then((res) => {
-        x1.style.width = "120px";
-        console.log(res);
-      });
+        x1.style.width = "120px"
+        console.log(res)
+      })
     }
 
     function api1() {
-      return fetch('https://m.sanfu.com/ms-sanfu-mgr-mall/search/getOrderDetail?ordId=2889264852503798337', {
-        method: "get",
-        headers: {
-          authorization: '0f7aee35a87c1fbp2f4dcdd95c7f51bc',
-          "Content-Type": "application/json",
-        },
-      }).then((res) => res.json());
+      return fetch(
+        "https://m.sanfu.com/ms-sanfu-mgr-mall/search/getOrderDetail?ordId=2889264852503798337",
+        {
+          method: "get",
+          headers: {
+            authorization: "0f7aee35a87c1fbp2f4dcdd95c7f51bc",
+            "Content-Type": "application/json",
+          },
+        }
+      ).then((res) => res.json())
     }
   </script>
 </html>
