@@ -117,7 +117,7 @@ class diyMessage {
     }
 }
 
-// 备注 需传入对应平台 目前为拼多多
+// 备注 需传入对应平台 目前为拼多多   API
 class Note {
     constructor(platform = "拼多多") {
         this.platform = platform;
@@ -187,6 +187,40 @@ class ResolvingSFOrder {
         // console.log(this.orderObj)
 
         return this.orderObj;
+    }
+}
+
+// 常用API
+class CommonAPI extends diyMessage{
+    constructor() {
+        super();
+        this.token = localStorage.getItem('sanFuLoginToken');
+    }
+
+
+    // 三福退货单API
+    SFAfterOrderAPI(orderNo){
+        let url = `https://m.sanfu.com/ms-sanfu-mgr-mall/search/getRefundAndSalesReturnDetail?tbOrdIds=${orderNo}`
+       let myRequest = this.getRequest(url)
+       console.log(myRequest);
+    //    return axios.get(url,{
+    //     headers:{'authorization':this.token}
+    //    }).then((res)=>{
+    //     console.log(res)
+    //     return res
+    // }   );
+    }
+    getRequest(url,config= {}){
+        if(window.axios !== undefined){
+            return axios.get(url)
+        }else{
+            let tempObj = {headers:{
+                'Content-Type' : 'application/json'
+            }}
+            Object.assign(config,tempObj)
+            
+            return fetch(url,config)
+        }
     }
 }
 // 常用模块
@@ -535,9 +569,7 @@ class CommonModule extends Note {
 
 window.note = new Note();
 window.commonModule = new CommonModule();
-class SFAPI {
-    constructor() { }
-}
+window.commonAPI = new CommonAPI();
 let message = new diyMessage();
 (function () {
     "use strict";
@@ -669,9 +701,10 @@ function commonModuleDivFn () {
     commonModuleDiv.style.padding = "10px 20px";
     commonModuleDiv.style.zIndex = 999;
     commonModuleDiv.style.position = "fixed";
-    commonModuleDiv.style.top = "10px";
-    commonModuleDiv.style.left = "10px";
+    commonModuleDiv.style.top = "70px";
+    commonModuleDiv.style.left = "200px";
     commonModuleDiv.style.display = "none";
+    commonModuleDiv.style.justifyContent= "space-evenly"
     let $common = new CommonModule();
 
     // 获取拼多多订单号按钮
@@ -679,7 +712,7 @@ function commonModuleDivFn () {
     getPddSalesOrderNoBtn.innerText = "获取checked订单号";
     // 获取售后单号按钮
     let getPlatformAfterNoBtn = $common.getAfterSalesOrderBtn('售后单号');
-    getPlatformAfterNoBtn.innerText = "获取checked订单号";
+    getPlatformAfterNoBtn.innerText = "获取checked售后单号";
     // 获取当前选择的快递单号
     let getPddKuaiDiDanHaoBtn = $common.getAfterSalesOrderBtn('快递单号');
     getPddKuaiDiDanHaoBtn.innerText = "获取checked快递单号";

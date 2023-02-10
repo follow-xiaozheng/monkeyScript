@@ -11,10 +11,14 @@
 
 (function () {
     "use strict";
+    importAxiosFn()
+})();
+
+function importAxiosFn(){
     let axiosX = document.createElement("script");
     axiosX.src = "https://unpkg.com/axios/dist/axios.min.js";
     document.getElementsByTagName("body")[0].appendChild(axiosX);
-})();
+}
 
 //  常用变量与全局变量
 var infoModule = document.getElementsByClassName("ordersty");
@@ -24,6 +28,9 @@ var SFToken = "14d35d548273efpe1656a7bec748491e";
 
 
 class SFAPI {
+    constructor() {
+        this.token = localStorage.getItem('SFloginToken')
+    }
     getOrderDetailAPI (orderNo) {
         const baseURL = "https://m.sanfu.com/ms-sanfu-mgr-mall/search/getOrderDetail?ordId=" + orderNo;
         const orderInfoApi = axios({
@@ -33,9 +40,46 @@ class SFAPI {
         })
         return orderInfoApi
     }
+
+    // 三福退货单API
+    SFAfterOrderAPI(orderNo){
+        let url = `https://m.sanfu.com/ms-sanfu-mgr-mall/search/getRefundAndSalesReturnDetail?tbOrdIds=${orderNo}`
+       
+        return axios.get(url,{
+            headers:{'authorization':this.token}
+        }).then((res)=>{
+            let data = res.data;
+            if(data.code===10001){
+                this.SFAfterOrderAPI();
+                alert(data.msg)
+            }
+            console.log(res)
+            return res.data
+        }   );
+    }
+
+    // sanfu登录获取token
+    SFloginTokenAPI(){
+       let url= "https://m.sanfu.com/ms-sanfu-mgr-mall/system/login";
+       return axios.post(url,{
+            userId: "ZHJ165",
+        userPassword: "sf123321"
+        })
+        .then(res => {
+            console.log(res)
+            let token = res.data.data.token;
+            localStorage.setItem('SFloginToken',token)
+            return token
+        })
+        .catch(err => {
+            console.error(err); 
+        })
+        
+    }
+
 }
 let sfapi = new SFAPI();
-
+window.sfapi = new SFAPI();
 setTimeout(() => {
     getTokenApi().then(res => {
         console.log(res, 'res');
@@ -54,6 +98,10 @@ setTimeout(() => {
     btn.style.left = '120px'
     document.getElementsByTagName('body')[0].appendChild(btn);
 
+    let btn2 = btn.cloneNode(false);
+    btn2.innerText ='xxx'
+    btn.style.top = '150px'
+    document.getElementsByTagName('body')[0].appendChild(btn2);
     btn.addEventListener('click', function () {
         let orderNo = prompt('请输入需要查询的订单号');
         if (orderNo != null || orderNo != '') {
