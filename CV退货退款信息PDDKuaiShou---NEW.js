@@ -782,7 +782,16 @@ let clearInterX1 = setInterval(() => {
         }
         // 获取各平台退货或仅退款信息☆☆☆☆☆
         let btn = addBtn("CV售后信息");
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", ()=>{
+            getAfterSalesFn()
+        });
+        window.onkeydown = (e)=>{
+            if(e.code=='Space' && e.ctrlKey == true){
+                console.log('xx');
+                getAfterSalesFn()
+            }
+       }
+        function getAfterSalesFn(){
             if (window.axios == undefined || window.axios == null) {
                 importAxiosFn();
                 message.$message({ message: "Axios未加载！重新刷新下", type: "error" });
@@ -813,7 +822,7 @@ let clearInterX1 = setInterval(() => {
                 element.style.width = "40%";
             }
             body.appendChild(diyAlertDiv);
-        });
+        }
         body.appendChild(btn);
         clearInterval(clearInterX1);
     }
