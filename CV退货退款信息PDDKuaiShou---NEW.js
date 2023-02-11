@@ -571,12 +571,9 @@ window.note = new Note();
 window.commonModule = new CommonModule();
 window.commonAPI = new CommonAPI();
 let message = new diyMessage();
-(function () {
-    "use strict";
 
-    // Your code here...
-    var DATE = new Date();
-    let notePdd = new Note("拼多多");
+// 设置快捷键
+function shortcutKeysFn(params) {
     window.onkeydown = function (e) {
         // console.log(e)
         // console.log(e.code)
@@ -664,8 +661,10 @@ let message = new diyMessage();
                 }, 250);
             }
         }
+       // console.log(e);
         // 设置是否显示 常用模块
         if (e.code == "KeyB" && e.altKey == true && e.ctrlKey == true) {
+            console.log(e);
             // 控制常用div是否显示           commonModuleFn()
             let commonModuleDiv =
                 document.getElementsByClassName("commonModuleDiv")[0];
@@ -678,6 +677,20 @@ let message = new diyMessage();
             }
         }
     };
+}
+
+window.onload = function() {
+    shortcutKeysFn();
+}
+
+
+// function () {
+    // "use strict";
+
+    // Your code here...
+    var DATE = new Date();
+    let notePdd = new Note("拼多多");
+
 
     // 使用定时器延迟引入常用数据
     setTimeout(() => {
@@ -688,9 +701,13 @@ let message = new diyMessage();
         if (window.axios == undefined || window.axios == null) {
             clearInterval(offInter1);
             importAxiosFn();
+            
+            shortcutKeysFn();
         }
     }, 1000);
-})();
+
+
+// }();
 
 // 常用模块的DIV
 function commonModuleDivFn () {
@@ -791,6 +808,7 @@ let clearInterX1 = setInterval(() => {
                 getAfterSalesFn()
             }
        }
+
         function getAfterSalesFn(){
             if (window.axios == undefined || window.axios == null) {
                 importAxiosFn();
@@ -823,6 +841,7 @@ let clearInterX1 = setInterval(() => {
             }
             body.appendChild(diyAlertDiv);
         }
+
         body.appendChild(btn);
         clearInterval(clearInterX1);
     }
