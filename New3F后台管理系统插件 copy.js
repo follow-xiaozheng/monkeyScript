@@ -77,6 +77,43 @@ class SFAPI {
         
     }
 
+    // 三福 需要的售后信息 登记用的   需传入promise数组形式
+   async SFNeedAfterInfo(promiseArr){
+        
+       return await Promise.all(promiseArr).then(resArr => {
+            // 将所有需要的售后信息存储在里面
+            let needAfterInfoArr = []
+            for (let i = 0; i < resArr.length; i++) {
+                const data = resArr[i].data[0];
+                let needAfterInfo = []
+                // 物流详情
+                let wuLiuInfoArr = data.netSales[0].logisticsMsgDto[0].lOGISTICDETAILS;
+                let wuLiuInfoStr = '';
+                for (let wlInfoIndex = 0; wlInfoIndex < wuLiuInfoArr.length; wlInfoIndex++) {
+                    const element = wuLiuInfoArr[wlInfoIndex];
+                    wuLiuInfoStr += `${element.msg}\n${element.time}\n`
+                }
+
+                needAfterInfo = [
+                    data.return_id, // 订单号
+                    data.tb_ord_id, // 售后单号
+                    data.netSales[0].logisticsMsgDto[0].sHO_ID, // 门店
+                    "", // 工单
+                    "包裹退回优先退",   // 优先退原因
+                    wuLiuInfoStr,    //物流详情
+                    "已签收",   // 物流状态
+                    data.netSales[0].logisticsMsgDto[0].lOGISTICNO,     // 退货单号
+                    data.netSales[0].logisticsMsgDto[0].lOGISTICDETAILS[0].time,    // 签收时间
+                    data.netSales[0].rEALPRICE  // 应退金额
+
+                ]
+                // join转为字符串 使用&符号分开   
+                needAfterInfoArr.push(needAfterInfo.join('&'))
+            }
+            DiyAlertFn(needAfterInfoArr.join('$'));
+            return needAfterInfoArr;
+        })
+    }
 }
 let sfapi = new SFAPI();
 window.sfapi = new SFAPI();
@@ -99,9 +136,43 @@ setTimeout(() => {
     document.getElementsByTagName('body')[0].appendChild(btn);
 
     let btn2 = btn.cloneNode(false);
-    btn2.innerText ='xxx'
-    btn.style.top = '150px'
+    btn2.innerText ='获取售后订单所需信息'
+    btn2.style.top = '150px'
     document.getElementsByTagName('body')[0].appendChild(btn2);
+    btn2.addEventListener('click',function() {
+        let orderAfterNo = prompt('请输入售后订单号')
+        if(orderAfterNo !== '' || orderAfterNo !== null){
+            // console.log(orderAfterNo.split(','));
+            let orderNoArr = orderAfterNo.split(',')
+
+            let orderPromiseArr = []
+
+            let indexLength = orderNoArr.length
+            let index = 0
+            function multiRequest (orderNoArr) {
+                return sfapi.SFAfterOrderAPI(orderNoArr[index]).then(res => {
+                    orderPromiseArr.push(res)
+                    // console.log(orderPromiseArr);
+                    if (index < indexLength - 1) {
+                        index++
+                    } else {
+                        // promiseAllFn(orderPromiseArr)
+                        sfapi.SFNeedAfterInfo(orderPromiseArr);
+                        return orderPromiseArr
+                    }
+
+                    setTimeout(() => {
+                        multiRequest(orderNoArr)
+                    }, 200)
+                    // return res
+                })
+
+
+            }
+            // 并发请求，200毫秒请求一个
+            multiRequest(orderNoArr)
+        }
+    })
     btn.addEventListener('click', function () {
         let orderNo = prompt('请输入需要查询的订单号');
         if (orderNo != null || orderNo != '') {
