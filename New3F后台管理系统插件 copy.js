@@ -218,12 +218,8 @@ setTimeout(() => {
                     let orderWLXX = []
                     for (let i = 0; i < res.length; i++) {
                         const resX = res[i];
-                        let netSales = resX.data.netSales
-                        let resData = resX.data;
-                        if (netSales == undefined || netSales == null) {
-                            netSales = resX.data.data.netSales
-                            resData = resX.data.data;
-                        }
+                        let resData = resX.data.data==undefined?resX.data:resX.data.data;
+                        let netSales = resData.netSales
                         // 将每个promise值的data数据放入
                         orderInfoArr.push(resData);
                         for (let j = 0; j < netSales.length; j++) {
