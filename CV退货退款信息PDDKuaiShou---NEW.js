@@ -201,15 +201,17 @@ class CommonAPI extends diyMessage{
     /*
     afterSalesType 售后类型   1已发货仅退款 2退货退款  3换货  4补寄  0未发货仅退款
 
+    orderByCreatedAtDesc  最近申请排序      orderByExpireTimeAsc   即将逾期排序【两个需要用true来表达】
     pageNumber 当前所在页数     pageSize 页面大小\容量
     
     quickSearchType  快速搜索类型
     */
-    GETafterOrderInfoAPI({
+    GETPDDafterOrderInfoAPI({
         afterSalesType=2,
         mallRemarkStatus=null,
         mallRemarkTag= null,
-        orderByCreatedAtDesc= true,
+        orderByCreatedAtDesc=false,
+        orderByExpireTimeAsc=false,
         page=1,
         pageNumber= 1,
         pageSize= 10,
@@ -226,6 +228,7 @@ class CommonAPI extends diyMessage{
                     mallRemarkStatus: mallRemarkStatus,
                     mallRemarkTag: mallRemarkTag,
                     orderByCreatedAtDesc: orderByCreatedAtDesc,
+                    orderByExpireTimeAsc:orderByExpireTimeAsc,
                     page: page,
                     pageNumber: pageNumber,
                     pageSize: pageSize,
@@ -235,7 +238,7 @@ class CommonAPI extends diyMessage{
                 .then((res) => res.json())
                 .then((res) => {
                     console.log(res);
-                    return res.data
+                    return res.result
                 })
     
     }
@@ -267,6 +270,10 @@ class CommonAPI extends diyMessage{
 }
 // 常用模块
 class CommonModule extends Note {
+    constructor() {
+        super()
+        this.$commonAPI = new CommonAPI();
+    }
     // 通用的备注按钮
     currencyNoteBtn ({ orderNo, remark }, innerText = "默认按钮") {
         let btn = this.createBtn({ innerText: innerText });
@@ -447,7 +454,9 @@ class CommonModule extends Note {
     }
 // 获取页面logisticsDiv的快递单号并且分类
     getHTMLlogisticsDivNoBtn(){
-       let logistics = document.getElementsByClassName('logisticsDiv');
+        let btn = this.createBtn({});
+        btn.addEventListener('click',()=>{
+            let logistics = document.getElementsByClassName('logisticsDiv');
        let orderNoClassify = {
             YTdz:{
                 name:'圆通对总', 
@@ -493,15 +502,105 @@ class CommonModule extends Note {
 
         }
        }
+       })
+       
+       return btn;
     }
 
-    createBtn ({ innerText = "按钮", height = "50px", width = "100px" }) {
-        var btn = document.createElement("button");
-        btn.className = "diyBtn_Class";
-        btn.style.height = height;
-        btn.style.width = width;
-        btn.style.backgroundColor = "rgba(255, 255, 255, 0)";
-        btn.innerText = innerText;
+
+
+    // 获取当前页面售后编号
+    getHTMLAfterOrderNoBtn(platform = '拼多多'){
+        let btn = this.createBtn({});
+        let $this = this;
+        btn.addEventListener('click',()=>{
+            switch (platform) {
+                case '拼多多':
+                case 'PDD':
+                    pddAfterInfoFn()
+                    break;
+            
+                default:
+                    pddAfterInfoFn()
+                    break;
+            }
+       })
+        
+
+        function pddAfterInfoFn() {
+            let orderByCreatedAtDesc;
+            let orderByExpireTimeAsc;
+            if(document.getElementsByClassName('IPT_mirror_scftb7')[7].innerHTML === '最近申请顺序'){
+                orderByCreatedAtDesc=true
+                orderByExpireTimeAsc=false
+            }else{
+                orderByCreatedAtDesc=false
+                orderByExpireTimeAsc=true
+            }
+            // 售后类型 
+           let afterSalesType;
+           let afterSalesTypeText =document.getElementsByClassName('TAB_capsuleLabel_scftb7 TAB_active_scftb7')[0].innerText;
+           let afterSalesTypeArr = [
+            {
+                text:'全部',
+                typeNum:''
+            },
+            {
+                text:'已发货-仅退款',
+                typeNum:1
+            },
+            {
+                text:'退货退款',
+                typeNum:2
+            },
+            {
+                text:'换货',
+                typeNum:3
+            },
+            {
+                text:'补寄',
+                typeNum:4
+            },
+            {
+                text:'未发货仅退款',
+                typeNum:0
+            },
+
+            
+            
+           ]
+          for (let i = 0; i < afterSalesTypeArr.length; i++) {
+            const element = afterSalesTypeArr[i];
+            if(afterSalesTypeText.indexOf(element.text)!==-1){
+                afterSalesType=element.typeNum;
+            }
+          }
+          // 售后类型 END ↑↑↑
+           let mallRemarkStatus=null
+           let mallRemarkTag= null
+        //    let page=1,
+            // pageNumber= 1,
+           let pageSize= Number(document.getElementsByClassName('IPT_mirror_scftb7')[8].innerHTML);
+            // quickSearchType= 4
+
+
+            $this.$commonAPI.GETPDDafterOrderInfoAPI({
+                orderByCreatedAtDesc:orderByCreatedAtDesc,
+                orderByExpireTimeAsc:orderByExpireTimeAsc,
+                afterSalesType:afterSalesType,
+                pageSize:pageSize,
+            }).then((res)=>{
+                let list = res.list;
+                // 售后编号
+                let listIDs = [];
+                for (let i = 0; i < list.length; i++) {
+                    const element = list[i];
+                    listIDs.push(element.id)
+                }
+                $this.DiyAlert(listIDs.join(','),'售后编号')
+           })
+        }
+
         return btn;
     }
 
@@ -542,6 +641,16 @@ class CommonModule extends Note {
         }
 
         return div
+    }
+    // 创建按钮
+    createBtn ({ innerText = "按钮", height = "50px", width = "100px" }) {
+        var btn = document.createElement("button");
+        btn.className = "diyBtn_Class";
+        btn.style.height = height;
+        btn.style.width = width;
+        btn.style.backgroundColor = "rgba(255, 255, 255, 0)";
+        btn.innerText = innerText;
+        return btn;
     }
     // diy弹窗
     /*
@@ -826,6 +935,9 @@ function commonModuleDivFn () {
     getPddKuaiDiDanHaoBtn.innerText = "获取checked快递单号";
     // 获取页面logisticsDiv的快递单号并且分类    待完善
     let getHTMLlogisticsDivNoBtn = $common.getHTMLlogisticsDivNoBtn();
+    getHTMLlogisticsDivNoBtn.innerText = '获取快递单号并且分类'
+    let getHTMLAfterOrderNoBtn = $common.getHTMLAfterOrderNoBtn();
+    getHTMLAfterOrderNoBtn.innerText = '获取页面售后编号'
     // 修改备注按钮
     let updateNoteBtn = $common.updateNoteBtn();
     updateNoteBtn.innerText = "修改订单备注";
@@ -833,7 +945,7 @@ function commonModuleDivFn () {
     // 获取当前页面所有订单号
     let getAllOrderNoBtn = $common.getHTMLALLOderNoBtn();
     // 将需要的元素添加进Div 该数组
-    let needAppendDivArr = [getPddSalesOrderNoBtn,getPlatformAfterNoBtn, getPddKuaiDiDanHaoBtn, updateNoteBtn, setStoreageBtn, getAllOrderNoBtn];
+    let needAppendDivArr = [getPddSalesOrderNoBtn,getPlatformAfterNoBtn, getPddKuaiDiDanHaoBtn,getHTMLlogisticsDivNoBtn,getHTMLAfterOrderNoBtn, updateNoteBtn, setStoreageBtn, getAllOrderNoBtn];
     for (let i = 0; i < needAppendDivArr.length; i++) {
         const element = needAppendDivArr[i];
         commonModuleDiv.appendChild(element);

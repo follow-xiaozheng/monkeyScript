@@ -89,11 +89,14 @@ class SFAPI {
                 // 物流详情
                 let wuLiuInfoArr = data.netSales[0].logisticsMsgDto[0].lOGISTICDETAILS;
                 let wuLiuInfoStr = '';
+                let qianShouShiJian = wuLiuInfoArr.length>0?wuLiuInfoArr[0].time:'';
                 for (let wlInfoIndex = 0; wlInfoIndex < wuLiuInfoArr.length; wlInfoIndex++) {
                     const element = wuLiuInfoArr[wlInfoIndex];
                     wuLiuInfoStr += `${element.msg}\n${element.time}\n`
                 }
-
+                
+                
+                
                 needAfterInfo = [
                     data.return_id, // 订单号
                     data.tb_ord_id, // 售后单号
@@ -103,7 +106,7 @@ class SFAPI {
                     wuLiuInfoStr,    //物流详情
                     "已签收",   // 物流状态
                     data.netSales[0].logisticsMsgDto[0].lOGISTICNO,     // 退货单号
-                    data.netSales[0].logisticsMsgDto[0].lOGISTICDETAILS[0].time,    // 签收时间
+                    qianShouShiJian,    // 签收时间
                     data.netSales[0].rEALPRICE  // 应退金额
 
                 ]
