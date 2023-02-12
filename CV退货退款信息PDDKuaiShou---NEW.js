@@ -197,6 +197,48 @@ class CommonAPI extends diyMessage{
         this.token = localStorage.getItem('sanFuLoginToken');
     }
 
+    // 拼多多获取售后订单信息API
+    /*
+    afterSalesType 售后类型   1已发货仅退款 2退货退款  3换货  4补寄  0未发货仅退款
+
+    pageNumber 当前所在页数     pageSize 页面大小\容量
+    
+    quickSearchType  快速搜索类型
+    */
+    GETafterOrderInfoAPI({
+        afterSalesType=2,
+        mallRemarkStatus=null,
+        mallRemarkTag= null,
+        orderByCreatedAtDesc= true,
+        page=1,
+        pageNumber= 1,
+        pageSize= 10,
+        quickSearchType= 4
+    }){
+            let url = 'https://mms.pinduoduo.com/mercury/mms/afterSales/queryList'
+           return fetch(url, {
+                method: "post",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body:JSON.stringify({
+                    afterSalesType: afterSalesType,
+                    mallRemarkStatus: mallRemarkStatus,
+                    mallRemarkTag: mallRemarkTag,
+                    orderByCreatedAtDesc: orderByCreatedAtDesc,
+                    page: page,
+                    pageNumber: pageNumber,
+                    pageSize: pageSize,
+                    quickSearchType: quickSearchType
+                })
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    console.log(res);
+                    return res.data
+                })
+    
+    }
 
     // 三福退货单API
     SFAfterOrderAPI(orderNo){
