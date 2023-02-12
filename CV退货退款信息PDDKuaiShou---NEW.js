@@ -403,6 +403,55 @@ class CommonModule extends Note {
 
         return btn;
     }
+// 获取页面logisticsDiv的快递单号并且分类
+    getHTMLlogisticsDivNoBtn(){
+       let logistics = document.getElementsByClassName('logisticsDiv');
+       let orderNoClassify = {
+            YTdz:{
+                name:'圆通对总', 
+                orderNos:[]
+            },
+            ZTdz:{
+                name:'中通对总', 
+                orderNos:[]
+            },
+            GDDYT:{
+                name:'GDD圆通', 
+                orderNos:[]
+            },
+            GDDZT:{
+                name:'GDD中通', 
+                orderNos:[]
+            },
+            GDDEMS:{
+                name:'GDD邮政', 
+                orderNos:[]
+            },
+            GDDYD:{
+                name:'GDD韵达',
+                orderNos:[]
+            },
+            other:{
+                name:'其他',
+                orderNos:[]
+            }
+       }
+       for (let i = 0; i < logistics.length; i++) {
+        const element = logistics[i];
+        // 判断是否对总   对总true与false
+        const isDz = element.innerText.indexOf('对总')!==-1?true:false;
+        if(isDz){
+            // 对总圆通   不为-1则为圆通  否则为中通
+            if(element.firstElementChild.innerText.indexOf('圆通')!==-1){
+                orderNoClassify
+            }else{
+
+            }
+        }else if(isDz===false){
+
+        }
+       }
+    }
 
     createBtn ({ innerText = "按钮", height = "50px", width = "100px" }) {
         var btn = document.createElement("button");
@@ -733,6 +782,8 @@ function commonModuleDivFn () {
     // 获取当前选择的快递单号
     let getPddKuaiDiDanHaoBtn = $common.getAfterSalesOrderBtn('快递单号');
     getPddKuaiDiDanHaoBtn.innerText = "获取checked快递单号";
+    // 获取页面logisticsDiv的快递单号并且分类    待完善
+    let getHTMLlogisticsDivNoBtn = $common.getHTMLlogisticsDivNoBtn();
     // 修改备注按钮
     let updateNoteBtn = $common.updateNoteBtn();
     updateNoteBtn.innerText = "修改订单备注";
